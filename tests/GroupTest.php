@@ -15,6 +15,7 @@ use OCP\Group\Backend\ICountDisabledInGroup;
 use OCP\Group\Backend\ICountUsersBackend;
 use OCP\Group\Backend\IGetDisplayNameBackend;
 use OCP\Group\Backend\IGroupDetailsBackend;
+use OCP\Group\Backend\IHideFromCollaborationBackend;
 use OCP\Group\Backend\INamedBackend;
 use OCP\Group\Backend\ISearchableGroupBackend;
 use OCP\IAppConfig;
@@ -32,6 +33,7 @@ class GroupTest extends TestCase {
 	private IAppConfig&MockObject $appConfig;
 	private GroupBackend $backend;
 	private bool $excludeGuests = false;
+	private bool $hideFromSharing = false;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -42,8 +44,10 @@ class GroupTest extends TestCase {
 			->willReturnArgument(0);
 		$this->appConfig = $this->createMock(IAppConfig::class);
 		$this->appConfig->method('getValueBool')
-			->with('group_everyone', 'exclude_guests')
-			->willReturnCallback(fn (): bool => $this->excludeGuests);
+			->willReturnCallback(fn (string $app, string $key): bool => match ([$app, $key]) {
+				['group_everyone', 'exclude_guests'] => $this->excludeGuests,
+				['group_everyone', 'hide_from_sharing'] => $this->hideFromSharing,
+			});
 		$this->backend = new GroupBackend($this->userManager, $this->l10n, $this->appConfig);
 	}
 
@@ -61,6 +65,7 @@ class GroupTest extends TestCase {
 		$this->assertInstanceOf(ICountUsersBackend::class, $this->backend);
 		$this->assertInstanceOf(IGetDisplayNameBackend::class, $this->backend);
 		$this->assertInstanceOf(IGroupDetailsBackend::class, $this->backend);
+		$this->assertInstanceOf(IHideFromCollaborationBackend::class, $this->backend);
 		$this->assertInstanceOf(INamedBackend::class, $this->backend);
 		$this->assertInstanceOf(ISearchableGroupBackend::class, $this->backend);
 	}
@@ -73,6 +78,14 @@ class GroupTest extends TestCase {
 	public function testGroupExists(): void {
 		$this->assertTrue($this->backend->groupExists('everyone'));
 		$this->assertFalse($this->backend->groupExists('not_everyone'));
+	}
+
+	public function testHideGroup(): void {
+		$this->assertFalse($this->backend->hideGroup('everyone'));
+
+		$this->hideFromSharing = true;
+		$this->assertTrue($this->backend->hideGroup('everyone'));
+		$this->assertFalse($this->backend->hideGroup('not_everyone'));
 	}
 
 	public function testGetUserGroups(): void {

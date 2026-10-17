@@ -31,6 +31,7 @@
 	<commands>
 		<command>OCA\GroupEveryone\Command\ExcludeGuests</command>
 		<command>OCA\GroupEveryone\Command\RestrictSharing</command>
+		<command>OCA\GroupEveryone\Command\HideFromSharing</command>
 	</commands>
 
 	<collaboration>

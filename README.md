@@ -33,3 +33,17 @@ The group is also removed from the share recipient suggestions of other users (F
 the same search such as Talk or Deck), so they no longer see it.
 Use `--off` to allow every user again, or run the command without an option to show the current setting.
 Existing shares are not affected, and the group stays visible in calendar and contact sharing.
+
+## Hiding the group from sharing
+
+To hide the "Everyone" group from sharing for all users, including administrators, run:
+
+```bash
+occ group_everyone:hide-from-sharing --on
+```
+
+The group is then no longer suggested as a share recipient, neither for files nor for calendars and address books.
+Calendars and address books that are shared with the group are no longer visible to its members.
+Existing file shares with the group keep working, and creating new ones is still possible by other means than the share dialog (e.g. the OCS API).
+To reject those, also restrict sharing to administrators (see above).
+Use `--off` to show the group again, or run the command without an option to show the current setting.

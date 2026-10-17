@@ -16,6 +16,7 @@ use OCP\Group\Backend\ICountDisabledInGroup;
 use OCP\Group\Backend\ICountUsersBackend;
 use OCP\Group\Backend\IGetDisplayNameBackend;
 use OCP\Group\Backend\IGroupDetailsBackend;
+use OCP\Group\Backend\IHideFromCollaborationBackend;
 use OCP\Group\Backend\INamedBackend;
 use OCP\Group\Backend\ISearchableGroupBackend;
 use OCP\IAppConfig;
@@ -32,10 +33,12 @@ class GroupBackend extends ABackend implements
 	ICountUsersBackend,
 	IGetDisplayNameBackend,
 	IGroupDetailsBackend,
+	IHideFromCollaborationBackend,
 	INamedBackend,
 	ISearchableGroupBackend {
 	public const GROUP_ID = 'everyone';
 	public const CONFIG_EXCLUDE_GUESTS = 'exclude_guests';
+	public const CONFIG_HIDE_FROM_SHARING = 'hide_from_sharing';
 
 	public function __construct(
 		private IUserManager $userManager,
@@ -176,6 +179,16 @@ class GroupBackend extends ABackend implements
 
 	public function getBackendName(): string {
 		return 'Everyone';
+	}
+
+	/**
+	 * Hiding the group removes it from the share recipient suggestions, and from the
+	 * group memberships of the DAV principals, so calendars and address books shared
+	 * with it are no longer visible to its members.
+	 */
+	public function hideGroup(string $groupId): bool {
+		return $groupId === $this->groupName
+			&& $this->appConfig->getValueBool(Application::APP_ID, self::CONFIG_HIDE_FROM_SHARING);
 	}
 
 	/**
